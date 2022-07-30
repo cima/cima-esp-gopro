@@ -1,5 +1,25 @@
 set(srcs
     "LightHubMain.cpp"
+    "LightGroupService.h" "LightGroupService.cpp"
+    "LightSettings.h" "LightSettings.cpp"
+    "Agent.h" "Agent.cpp"
+
+    "system/Log.h" "system/Log.cpp"
+    
+    "system/ButtonController.h" "system/ButtonController.cpp"
+    "system/PWMDriver.h" "system/PWMDriver.cpp"
+    
+    "system/ManagerNotInitializedException.h"
+    "system/ExecutionLimiter.h" "system/ExecutionLimiter.cpp"
+
+    "system/network/NetworkManager.h" "system/network/NetworkManager.cpp"
+    "system/network/WifiManager.h" "system/network/WifiManager.cpp"
+    "system/network/WifiCredentials.h" "system/network/WifiCredentials.cpp"
+
+    "iot/CertSource.cpp" "iot/CertSource.h"
+    "iot/AzureConfig.cpp" "iot/AzureConfig.h"
+    # "iot/IotHubManager.cpp" "iot/IotHubManager.h"
+    # "iot/DeviceProvisioningClient.cpp" "iot/DeviceProvisioningClient.h"
 )
 
 
@@ -24,8 +44,7 @@ endif()
 add_definitions(-DSET_TRUSTED_CERT_IN_SAMPLES)
 component_compile_definitions(SET_TRUSTED_CERT_IN_SAMPLES)
 
-# TODO filesystem
-# spiffs_create_partition_image(storage ../filesystem FLASH_IN_PROJECT)
+spiffs_create_partition_image(storage ../filesystem FLASH_IN_PROJECT)
 
 #set(COMPONENT_REQUIRES spiffs nvs_flash json mbedtls port esp_eth driver lwip)
 #set(COMPONENT_PRIV_REQUIRES )
