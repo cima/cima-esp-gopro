@@ -5,8 +5,7 @@
 
 #include <driver/gpio.h>
 
-#include "system/Log.h"
-#include "system/Log.h"
+#include <system/Log.h>
 
 namespace cima {
 

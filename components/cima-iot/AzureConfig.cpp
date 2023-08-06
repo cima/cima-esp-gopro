@@ -1,4 +1,4 @@
-#include "AzureConfig.h"
+#include <iot/AzureConfig.h>
 
 namespace cima::iot {
     const std::string &AzureConfig::getDpsHostname() const {

@@ -1,4 +1,4 @@
-#include "PWMDriver.h"
+#include <system/PWMDriver.h>
 
 namespace cima::system {
     PWMDriver::PWMDriver(gpio_num_t pwmGpioPin, ledc_channel_t channel, bool inverted) : pwmGpioPin(pwmGpioPin), channel(channel), inverted(inverted) {

@@ -1,6 +1,8 @@
 #pragma once
 
-#include <iothub_device_client_ll.h>
+/* Azure Provisioning/IoT Hub library includes */
+#include <azure_iot_hub_client.h>
+#include <azure_iot_provisioning_client.h>
 
 #include <string>
 #include <memory>
@@ -8,9 +10,9 @@
 #include <chrono>
 #include <functional>
 
-#include "CertSource.h"
-#include "../system/Log.h"
-#include "../system/ExecutionLimiter.h"
+#include <iot/CertSource.h>
+#include <system/Log.h>
+#include <system/ExecutionLimiter.h>
 
 namespace cima::iot {
 

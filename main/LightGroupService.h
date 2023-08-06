@@ -1,6 +1,6 @@
 #pragma once
 
-#include "system/PWMDriver.h"
+#include <system/PWMDriver.h>
 #include "LightSettings.h"
 
 namespace cima {

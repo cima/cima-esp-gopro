@@ -1,0 +1,12 @@
+{
+    "Networks":[
+	    {
+            "SSID":"SomeFirstNetwork",
+            "password":"SOmePassword"
+        },
+        {
+            "SSID":"SomeOtherNetwork",
+            "password":"S3cret"
+        }
+    ]
+}

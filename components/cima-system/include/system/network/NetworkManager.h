@@ -7,7 +7,7 @@
 #include <esp_event_base.h>
 #include <boost/signals2/signal.hpp>
 
-#include "../Log.h"
+#include <system/Log.h>
 
 
 namespace cima::system::network {

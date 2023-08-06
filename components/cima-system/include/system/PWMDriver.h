@@ -11,7 +11,7 @@
 
 #include <boost/signals2/signal.hpp>
 
-#include "Log.h"
+#include <system/Log.h>
 
 namespace cima::system {
     class PWMDriver {

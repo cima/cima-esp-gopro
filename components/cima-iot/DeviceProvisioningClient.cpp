@@ -1,4 +1,4 @@
-#include "DeviceProvisioningClient.h"
+#include <iot/DeviceProvisioningClient.h>
 
 #include <memory>
 

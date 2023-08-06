@@ -1,23 +1,15 @@
-#include "IoTHubManager.h"
+#include <iot/IoTHubManager.h>
 
 #include <string>
 #include <thread>
 #include <chrono>
 #include<functional>
  
-#ifdef SET_TRUSTED_CERT_IN_SAMPLES
-    #include<certs.h>
-#endif
+/* Exponential backoff retry include. */
+#include <backoff_algorithm.h>
 
-#include <iothub.h>
-#include <iothub_message.h>
-#include <iothub_client_options.h>
-#include <iothub_client_core_common.h>
-#include <azure_c_shared_utility/threadapi.h>
-#include <azure_c_shared_utility/shared_util_options.h>
-#include <azure_c_shared_utility/platform.h>
-
-#include <iothubtransportmqtt.h> //TODO request AMQP support in esp-azure
+/* Transport interface implementation include header for TLS. */
+#include <transport_tls_socket.h>
 
 namespace cima::iot {
 
@@ -45,6 +37,7 @@ namespace cima::iot {
         }
     
         iotHubClientHandle.reset(IoTHubDeviceClient_LL_CreateFromConnectionString(connectionString.c_str(), MQTT_Protocol));
+        TLS_Socket_Connect();
 
 #ifdef SET_TRUSTED_CERT_IN_SAMPLES
         IoTHubDeviceClient_LL_SetOption(iotHubClientHandle.get(), OPTION_TRUSTED_CERT, certificates);

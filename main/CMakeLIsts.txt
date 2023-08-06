@@ -3,29 +3,11 @@ set(srcs
     "LightGroupService.h" "LightGroupService.cpp"
     "LightSettings.h" "LightSettings.cpp"
     "Agent.h" "Agent.cpp"
-
-    "system/Log.h" "system/Log.cpp"
-    
-    "system/ButtonController.h" "system/ButtonController.cpp"
-    "system/PWMDriver.h" "system/PWMDriver.cpp"
-    
-    "system/ManagerNotInitializedException.h"
-    "system/ExecutionLimiter.h" "system/ExecutionLimiter.cpp"
-
-    "system/network/NetworkManager.h" "system/network/NetworkManager.cpp"
-    "system/network/WifiManager.h" "system/network/WifiManager.cpp"
-    "system/network/WifiCredentials.h" "system/network/WifiCredentials.cpp"
-
-    "iot/CertSource.cpp" "iot/CertSource.h"
-    "iot/AzureConfig.cpp" "iot/AzureConfig.h"
-    # "iot/IotHubManager.cpp" "iot/IotHubManager.h"
-    # "iot/DeviceProvisioningClient.cpp" "iot/DeviceProvisioningClient.h"
 )
-
 
 idf_component_register(SRCS "${srcs}"
                     #INCLUDE_DIRS ${COMPONENT_INCLUDE_DIRS}
-                    REQUIRES freertos spiffs nvs_flash json mbedtls esp_eth driver lwip coreMQTT azure-sdk-for-c azure-iot-middleware-freertos
+                    REQUIRES freertos spiffs nvs_flash json mbedtls esp_eth driver lwip coreMQTT cima-system cima-iot
 ) 
 
 enable_language(CXX)

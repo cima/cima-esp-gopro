@@ -9,7 +9,7 @@
 
 #include <boost/signals2/signal.hpp>
 
-#include "../Log.h"
+#include <system/Log.h>
 #include "WifiCredentials.h"
 #include "NetworkManager.h"
 

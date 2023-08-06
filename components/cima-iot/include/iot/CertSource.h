@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string>
 
-#include "../system/Log.h"
+#include <system/log.h>
 
 namespace cima::iot {
 

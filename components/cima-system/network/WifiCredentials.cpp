@@ -1,4 +1,4 @@
-#include "WifiCredentials.h"
+#include <system/network/WifiCredentials.h>
 
 namespace cima::system::network {
 
