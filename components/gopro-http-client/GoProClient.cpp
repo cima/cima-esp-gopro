@@ -7,6 +7,8 @@
 namespace gopro {
 
     static const char *TAG = "GoProCLient"; //TODO inline once my log is used
+    static const uint32_t INACTIVE_STOP_TIME = 0xffffffff;
+    static const uint32_t SHORT_RECORDING_SECONDS = 40;
 
     cima::system::Log GoProClient::LOG(TAG);
 
@@ -29,7 +31,7 @@ namespace gopro {
         }
 
         config.path = "/bacpac/se";
-        config.query = "t=gizmolikespizza";
+        config.query = "t=gizmolikespizza";//FIXME password
         config.user_data = this;
 
         //TODO tohle asi do connectu
@@ -50,6 +52,92 @@ namespace gopro {
         esp_http_client_cleanup(client);
 
         return true;
+    }
+
+    void GoProClient::toggleShortRecording(){
+        LOG.info("Requesting Starting/increasing a short recording session");
+
+        uint32_t now = esp_log_timestamp();
+        uint32_t dueTimestamp = stopAfterTime.load();
+        
+        stopAfterTime.store(
+            (dueTimestamp == INACTIVE_STOP_TIME ? now : dueTimestamp) 
+            + SHORT_RECORDING_SECONDS * 1000
+        );
+
+        startRecording();
+    }
+
+    void GoProClient::startRecording(){
+        std::unique_lock<std::mutex> lock(clientMutex); 
+
+        if( ! isNetworkUp()) {
+            LOG.debug("Network is down - not starting recording");
+            return;
+        }
+        LOG.info("Starting recording");
+
+        config.path = "/bacpac/SH";
+        config.query = "t=gizmolikespizza&p=%01"; //FIXME password
+        config.user_data = this;
+
+        //TODO tohle asi do connectu
+        esp_http_client_handle_t client = esp_http_client_init(&config);
+
+        local_response_len = 0;
+        esp_err_t err = esp_http_client_perform(client);
+        if (err == ESP_OK) {
+            LOG.info(TAG, "HTTP GET Status = %d, content_length = %d",// PRId64,
+                esp_http_client_get_status_code(client),
+                esp_http_client_get_content_length(client));
+        } else {
+            LOG.error(TAG, "HTTP GET request failed: %s", esp_err_to_name(err));
+        }
+        ESP_LOGD(TAG, "Output len after return %d", local_response_len);
+        ESP_LOG_BUFFER_HEX(TAG, local_response_buffer, local_response_len);
+
+        esp_http_client_cleanup(client);
+
+    }
+
+    void GoProClient::stopRecording(){
+        std::unique_lock<std::mutex> lock(clientMutex); 
+
+        if( ! isNetworkUp()) {
+            LOG.debug("Network is down - not stopping recording");
+            return;
+        }
+        LOG.info("Stopping recording");
+
+        config.path = "/bacpac/SH";
+        config.query = "t=gizmolikespizza&p=%00"; //FIXME password
+        config.user_data = this;
+
+        //TODO tohle asi do connectu
+        esp_http_client_handle_t client = esp_http_client_init(&config);
+
+        local_response_len = 0;
+        esp_err_t err = esp_http_client_perform(client);
+        if (err == ESP_OK) {
+            LOG.info(TAG, "HTTP GET Status = %d, content_length = %d",// PRId64,
+                esp_http_client_get_status_code(client),
+                esp_http_client_get_content_length(client));
+            stopAfterTime.store(0xffffffff);
+        } else {
+            LOG.error(TAG, "HTTP GET request failed: %s", esp_err_to_name(err));
+        }
+        ESP_LOGD(TAG, "Output len after return %d", local_response_len);
+        ESP_LOG_BUFFER_HEX(TAG, local_response_buffer, local_response_len);
+
+        esp_http_client_cleanup(client);
+    }
+
+    void GoProClient::stopExpiredRecording() {
+        uint32_t now = esp_log_timestamp();
+        if (now > stopAfterTime.load()){
+            stopRecording();
+        }
+
     }
 
     /**

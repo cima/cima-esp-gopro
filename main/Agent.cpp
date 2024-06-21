@@ -14,6 +14,7 @@
 
 #include <esp_spiffs.h>
 #include <esp_err.h>
+#include <esp_log.h>
 #include <nvs_flash.h>
 #include <nvs.h>
 
@@ -109,6 +110,41 @@ namespace cima {
         }
 
         return credentials;
+    }
+
+    void Agent::handleRfButton(
+        std::function<void()> toggleCallback, 
+        std::function<void()> upCallback, 
+        std::function<void()> downCallback, 
+        int protocol, long command
+    ){
+        if (protocol != 1){
+            return;
+        }
+
+        LOGGER.info("Handling (protocol: %d): %d", protocol, command);
+
+        switch (command) {
+            case 260129:
+            {
+                uint32_t now = esp_log_timestamp();
+                if(now - lastRfEventTime < 500){
+                    LOGGER.info("Skipping (protocol: %d): %d", protocol, command);    
+                    break;
+                }
+                lastRfEventTime = now;
+                toggleCallback();
+            }
+                break;
+
+            case 260132:
+                upCallback();
+                break;
+
+            case 260130:
+                downCallback();
+                break;
+        }
     }
 
     void Agent::mainLoop(){

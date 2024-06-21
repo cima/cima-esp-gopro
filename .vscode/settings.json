@@ -103,6 +103,7 @@
         "source_location": "cpp",
         "rope": "cpp",
         "slist": "cpp",
-        "cinttypes": "cpp"
+        "cinttypes": "cpp",
+        "xxatomic": "cpp"
     }
 }

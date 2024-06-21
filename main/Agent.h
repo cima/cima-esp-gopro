@@ -18,6 +18,8 @@ namespace cima {
 
         bool keepRunning = true;
 
+        uint32_t lastRfEventTime;
+
         public:
 
             static std::string FLASH_FILESYSTEM_MOUNT_PATH;
@@ -29,6 +31,13 @@ namespace cima {
             bool mountFlashFileSystem();
             void setupNetwork(system::network::WifiManager &wifiManager);
             std::list<system::network::WifiCredentials> readWifiCredentials();
+
+            void handleRfButton(
+                std::function<void()> toggleCallback, 
+                std::function<void()> upCallback, 
+                std::function<void()> downCallback, 
+                int protocol, long command
+            );
 
             void mainLoop();
             void registerToMainLoop(std::function<void()> function);

@@ -31,6 +31,8 @@ namespace gopro {
 
         std::atomic<bool> networkUp{false};
 
+        std::atomic<uint32_t> stopAfterTime{0};
+
     public:
 
         bool connect();
@@ -46,6 +48,12 @@ namespace gopro {
         bool isNetworkUp() {
             return networkUp.load();
         }
+
+        void toggleShortRecording();
+        void startRecording();
+        void stopRecording();
+
+        void stopExpiredRecording();
 
     private:
         esp_err_t receiveClientEvent(esp_http_client_event_t *evt);
