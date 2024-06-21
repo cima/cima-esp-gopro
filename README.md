@@ -63,4 +63,6 @@ not speking about environment and mount needs for cellphone.
 
 # Reading 
 
-[ESP HTTP Client](https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-reference/protocols/esp_http_client.html)
+- [ESP HTTP Client](https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-reference/protocols/esp_http_client.html)
+
+- [IP_EVENT_STA_GOT_IP](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-guides/wifi.html#ip-event-sta-got-ip)

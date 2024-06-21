@@ -6,7 +6,9 @@
 
 namespace gopro {
 
-    static const char *TAG = "GOPRO_HTTP_CLIENT";
+    static const char *TAG = "GoProCLient"; //TODO inline once my log is used
+
+    cima::system::Log GoProClient::LOG(TAG);
 
     esp_http_client_config_t GoProClient::config = {
         .host = "10.5.5.9",
@@ -19,7 +21,12 @@ namespace gopro {
     }
 
     bool GoProClient::requestStatus() {
-        clientMutex.lock();
+        std::unique_lock<std::mutex> lock(clientMutex); 
+
+        if( ! isNetworkUp()) {
+            LOG.debug("Network is down - exiting status request");
+            return false;
+        }
 
         config.path = "/bacpac/se";
         config.query = "t=gizmolikespizza";
@@ -42,7 +49,6 @@ namespace gopro {
 
         esp_http_client_cleanup(client);
 
-        clientMutex.unlock();
         return true;
     }
 

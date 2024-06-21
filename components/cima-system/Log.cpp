@@ -25,7 +25,7 @@ namespace cima::system {
    
         vsnprintf(buffer, 511, format, args);
 
-        ESP_LOGD("DEBUG", "%s", buffer);
+        ESP_LOGD(loggerName.c_str(), "%s", buffer);
 
         va_end(args);   
     }
@@ -38,7 +38,7 @@ namespace cima::system {
    
         vsnprintf(buffer, 511, format, args);
 
-        ESP_LOGI("INFO", "%s", buffer);
+        ESP_LOGI(loggerName.c_str(), "%s", buffer);
 
         va_end(args);   
     }
@@ -51,7 +51,7 @@ namespace cima::system {
    
         vsnprintf(buffer, 511, format, args);
 
-        ESP_LOGE("ERROR", "%s", buffer);
+        ESP_LOGE(loggerName.c_str(), "%s", buffer);
 
         va_end(args);   
     }

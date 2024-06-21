@@ -2,12 +2,17 @@
 
 #include <esp_http_client.h>
 #include <mutex>
+#include <atomic>
+
+#include <system/Log.h>
 
 namespace gopro {
     class GoProClient {
     public:
         static const int MAX_HTTP_OUTPUT_BUFFER = 2048;
     private:
+
+        static cima::system::Log LOG;
 
         // Buffer to store response of http request from event handler
         char local_response_buffer[MAX_HTTP_OUTPUT_BUFFER + 1] = {0};
@@ -24,11 +29,23 @@ namespace gopro {
 
         std::mutex clientMutex;
 
+        std::atomic<bool> networkUp{false};
+
     public:
 
         bool connect();
 
         bool requestStatus();
+
+        void setNetworkUp() { 
+            networkUp.store(true);
+        };
+        void setNetworkDown() { 
+            networkUp.store(false);
+        };
+        bool isNetworkUp() {
+            return networkUp.load();
+        }
 
     private:
         esp_err_t receiveClientEvent(esp_http_client_event_t *evt);

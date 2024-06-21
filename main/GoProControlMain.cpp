@@ -59,6 +59,9 @@ extern "C" void app_main(void) {
 
     agent.setupNetwork(wifiManager);
 
+    wifiManager.registerNetworkUpHandler([&](){goProClient.setNetworkUp();});
+    wifiManager.registerNetworkDownHandler([&](){goProClient.setNetworkDown();});
+
     // TODO try connect in a loop as gopro is wierd with when WIFI is acecsible
     wifiManager.start();
 

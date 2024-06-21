@@ -27,6 +27,11 @@ namespace cima::system::network {
 
     void WifiManager::start(){
 
+        if(networkIterator == this->credentials.end()) {
+            LOG.error("No networks defined.");
+            return;
+        }
+
         LOG.info("Connecting...");
 
         tcpip_adapter_init();
@@ -36,14 +41,17 @@ namespace cima::system::network {
 
         ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID, &WifiManager::wifiEventHandlerWrapper, this));
         ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &WifiManager::ipEventHandlerWrapper, this));
+        
+        //TODO now for try - latermaybe split into individual methods since it cant register for any
+        ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_STA_LOST_IP, &WifiManager::ipEventHandlerWrapper, this));
 
         initAccesspoint();
     }
 
     void WifiManager::initAccesspoint(){
         if(networkIterator == this->credentials.end()) {
-            LOG.error("No networks defined.");
-            return;
+            LOG.info("End of Network list reached. Starting over.");
+            networkIterator = this->credentials.begin();
         }
         initWifiStationConfig(networkIterator->getSsid(), networkIterator->getPassphrase());
         ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA) );
@@ -85,6 +93,12 @@ namespace cima::system::network {
                 }
                 
             }
+
+            //Signalize transition to connectivity lost state
+            if (connected) {
+                auto signalThread = std::thread([&](){networkDownSignal();});
+                signalThread.join();
+            }
             connected = false;
         }
     }
@@ -111,6 +125,8 @@ namespace cima::system::network {
             connected = false;
             auto signalThread = std::thread([&](){networkDownSignal();});
             signalThread.join();
+        } else {
+            LOG.info("Unhandled IP event occured: %d", event_id);
         }
     }
 

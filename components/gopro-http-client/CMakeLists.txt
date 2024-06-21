@@ -9,4 +9,4 @@ endif()
 idf_component_register(
     SRCS ${COMPONENT_SOURCES}
     INCLUDE_DIRS ${COMPONENT_DIR}/include
-    REQUIRES mbedtls esp_eth lwip esp-tls esp_event esp_http_client)
+    REQUIRES mbedtls esp_eth lwip esp-tls esp_event esp_http_client cima-system)
