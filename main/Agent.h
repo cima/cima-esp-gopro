@@ -7,8 +7,6 @@
 
 #include <system/Log.h>
 #include <system/network/WifiManager.h>
-#include <iot/AzureConfig.h>
-//#include <iot/IoTHubManager.h>
 
 #include "LightGroupService.h"
 
@@ -27,15 +25,10 @@ namespace cima {
             void welcome(std::string &visitorName);
             void cat(const std::string &filename);
 
-            int justPrint(const unsigned char *payload, size_t size, unsigned char **response, size_t *responseSize);
-            int sineLight(cima::LightGroupMap &lightGroups, const unsigned char *payload, size_t size, unsigned char **response, size_t *responseSize);
-            int whatIsTheTime(const unsigned char *payload, size_t size, unsigned char **response, size_t *responseSize);
-
             void initFlashStorage();
             bool mountFlashFileSystem();
             void setupNetwork(system::network::WifiManager &wifiManager);
             std::list<system::network::WifiCredentials> readWifiCredentials();
-            iot::AzureConfig readAzureConfig();
 
             void mainLoop();
             void registerToMainLoop(std::function<void()> function);

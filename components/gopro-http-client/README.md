@@ -1,0 +1,1 @@
+An object wrapper around wierd GoPro's HTTP calls.

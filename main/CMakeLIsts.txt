@@ -1,13 +1,10 @@
 set(srcs
-    "LightHubMain.cpp"
     "LightGroupService.h" "LightGroupService.cpp"
-    "LightSettings.h" "LightSettings.cpp"
     "Agent.h" "Agent.cpp"
 )
 
-idf_component_register(SRCS "${srcs}"
-                    #INCLUDE_DIRS ${COMPONENT_INCLUDE_DIRS}
-                    REQUIRES freertos spiffs nvs_flash json mbedtls esp_eth driver lwip coreMQTT cima-system cima-iot
+idf_component_register(SRCS "GoProControlMain.cpp" "${srcs}"
+                    REQUIRES freertos spiffs nvs_flash json mbedtls esp_eth driver lwip cima-system gopro-http-client
 ) 
 
 enable_language(CXX)
@@ -21,10 +18,6 @@ component_compile_definitions(CORE_DEBUG_LEVEL=4)
 if(Boost_FOUND)
     include_directories(${Boost_INCLUDE_DIRS})
 endif()
-
-# Azure SDK C specialities
-add_definitions(-DSET_TRUSTED_CERT_IN_SAMPLES)
-component_compile_definitions(SET_TRUSTED_CERT_IN_SAMPLES)
 
 spiffs_create_partition_image(storage ../filesystem FLASH_IN_PROJECT)
 

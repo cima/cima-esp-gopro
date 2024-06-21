@@ -20,16 +20,6 @@ set(CMAKE_CXX_FLAGS -mlongcalls ${CMAKE_CXX_FLAGS})
 cmake_policy(SET CMP0074 NEW)
 find_package(Boost)
 
-# Azure imports
-# -------------
-set (AZURE_IOT_SDK "${AZURE_SDK_C_PATH}/libraries/azure-sdk-for-c")
-
-set (EXTRA_COMPONENT_DIRS ${EXTRA_COMPONENT_DIRS} 
-                          ${AZURE_SDK_C_PATH}/ports/coreMQTT 
-                          #${AZURE_SDK_C_PATH}/libraries/coreMQTT
-                          #${AZURE_SDK_C_PATH}/libraries/azure-sdk-for-c
-                          )
-
 # Adafruit sensor
 # ---------------
 set(IOT_COMPONENT_DIRS  ${IOT_COMPONENT_DIRS}
@@ -39,11 +29,7 @@ set(IOT_COMPONENT_DIRS  ${IOT_COMPONENT_DIRS}
 
 set(EXTRA_COMPONENT_DIRS "${EXTRA_COMPONENT_DIRS} ${IOT_COMPONENT_DIRS}")
 
-# Modem & PPPoS implementation
-# ----------------------------
-#set(EXTRA_COMPONENT_DIRS "${EXTRA_COMPONENT_DIRS} ${IDF_PATH}/examples/protocols/pppos_client/components")
-
 # Main code
 # ---------
 
-project(CIMA-ESP32-LIGHTHUB)
+project(CIMA-ESP32-GOPRO)

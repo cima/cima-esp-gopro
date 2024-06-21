@@ -38,56 +38,6 @@ namespace cima {
         LOGGER.info("Read from %s:\n%.*s", filename.c_str(), readSize, buf);
     }
 
-    int Agent::justPrint(const unsigned char *payload, size_t size, unsigned char **response, size_t *responseSize){
-        LOGGER.info("Payload :\n%.*s", size, payload);
-
-        const char* responseMessage = "\"Thanks for asking\"";
-        *responseSize = strlen(responseMessage);
-        *response = (unsigned char *)strdup(responseMessage);
-
-        return 200;
-    }
-
-    
-    int Agent::sineLight(cima::LightGroupMap &lightGroups, const unsigned char *payload, size_t size, unsigned char **response, size_t *responseSize){
-        LOGGER.info("Payload :\n%.*s", size, payload);
-
-        const char* responseMessage = "\"sine Light Demo finished\"";
-
-        std::string lightGroupName = "unknown";
-        if(size >= 3) {
-            lightGroupName.assign((const char *)payload + 1, size - 2);
-        }
-
-        //TODO call demo loop on selected light group
-        auto lightGroupIt = lightGroups.find(lightGroupName);
-
-        if (lightGroupIt == lightGroups.end()) {
-            LOGGER.info("Unknown light group: <%s>", lightGroupName.c_str());
-            responseMessage = "\"Unknown light group\"";
-        } else {
-            lightGroupIt->second.get().demoLoop();
-        }
-
-        *responseSize = strlen(responseMessage);
-        *response = (unsigned char *)strdup(responseMessage);
-
-        return 200;
-    }
-
-    int Agent::whatIsTheTime(const unsigned char *payload, size_t size, unsigned char **response, size_t *responseSize){
-
-        auto end = std::chrono::system_clock::now();
-        std::time_t end_time = std::chrono::system_clock::to_time_t(end);
-        const char * timeText = std::ctime(&end_time);
-
-        char responseMessage[512];
-        *responseSize =  sprintf(responseMessage, "{\"time\":\"%s\"}", timeText);
-        *response = (unsigned char *)strdup(responseMessage);
-
-        return 200;
-    }
-
     void Agent::initFlashStorage(){
         LOGGER.info("Initializing flash storage...");
 
@@ -159,24 +109,6 @@ namespace cima {
         }
 
         return credentials;
-    }
-
-    iot::AzureConfig Agent::readAzureConfig() {
-        std::ifstream in(FLASH_FILESYSTEM_MOUNT_PATH + "/connectivity/azure.json");
-        std::string azureJson((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
-
-        iot::AzureConfig config;
-
-        cJSON *root = cJSON_Parse(azureJson.c_str());
-
-        cJSON *dps = cJSON_GetObjectItem(root, "DeviceProvisioningServices");
-        config.setDpsHostname(std::string(cJSON_GetObjectItem(dps, "HostName")->valuestring));
-        config.setDpsScopeId(std::string(cJSON_GetObjectItem(dps, "scopeID")->valuestring));
-
-        cJSON *iotHub = cJSON_GetObjectItem(root, "IoTHub");
-        config.setIotHubHostname(std::string(cJSON_GetObjectItem(iotHub, "HostName")->valuestring));
-
-        return std::move(config);
     }
 
     void Agent::mainLoop(){

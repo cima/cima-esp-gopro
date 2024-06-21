@@ -1,3 +1,0 @@
-# Azure Sample Iot
-
-Files shamelesly stolen from https://github.com/Azure-Samples/iot-middleware-freertos-samples/tree/main/demos/sample_azure_iot and https://github.com/Azure-Samples/iot-middleware-freertos-samples/tree/main/demos/projects/ESPRESSIF/esp32 because having so many files necessary despite correct architecural approach is unacceptable. So I took them here. These files should have been a part of entire middleware as specific implementation for ESP so people can use it and quickly develop instead of scouting for missing bits.

@@ -9,7 +9,7 @@ namespace cima {
 
     ::cima::system::Log LightGroupService::LOGGER("LightAlarmService");
 
-    LightGroupService::LightGroupService(system::PWMDriver &ledDriver, LightSettings &lightSettings) : ledDriver(ledDriver), lightSettings(lightSettings) {}
+    LightGroupService::LightGroupService(system::PWMDriver &ledDriver) : ledDriver(ledDriver) {}
 
     void LightGroupService::loop(){
 
@@ -28,7 +28,7 @@ namespace cima {
         
         //LOGGER.info("loop milis: %d", milis);
 
-        auto duty = lightSettings.getValueForMilis(milis);
+        auto duty = 2048;
         //LOGGER.info("loop duty: %d @ %d", duty, milis);
 
         ledDriver.update((uint32_t)duty);
@@ -56,9 +56,5 @@ namespace cima {
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
         setReady(currentReady);
-    }
-
-    LightSettings &LightGroupService::getLightSettings() {
-        return this->lightSettings;
     }
 }
