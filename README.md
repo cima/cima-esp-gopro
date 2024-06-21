@@ -61,4 +61,6 @@ not speking about environment and mount needs for cellphone.
 # Notes:
 > Boot mode: Some boards might be shipped with fast boot as a default option. To use `idf.py flash` you should switch to download boot mode. See in [Manual Bootloader](https://docs.espressif.com/projects/esptool/en/latest/esp32/advanced-topics/boot-mode-selection.html#manual-bootloader)
 
-# Reading [ESP HTTP Client](https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-reference/protocols/esp_http_client.html)
+# Reading 
+
+[ESP HTTP Client](https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-reference/protocols/esp_http_client.html)

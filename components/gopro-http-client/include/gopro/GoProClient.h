@@ -1,6 +1,7 @@
 #pragma once
 
 #include <esp_http_client.h>
+#include <mutex>
 
 namespace gopro {
     class GoProClient {
@@ -20,6 +21,8 @@ namespace gopro {
         esp_http_client_handle_t *httpClient;
 
         static esp_http_client_config_t config;
+
+        std::mutex clientMutex;
 
     public:
 

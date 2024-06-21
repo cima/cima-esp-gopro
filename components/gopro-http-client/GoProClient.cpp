@@ -19,6 +19,8 @@ namespace gopro {
     }
 
     bool GoProClient::requestStatus() {
+        clientMutex.lock();
+
         config.path = "/bacpac/se";
         config.query = "t=gizmolikespizza";
         config.user_data = this;
@@ -26,6 +28,7 @@ namespace gopro {
         //TODO tohle asi do connectu
         esp_http_client_handle_t client = esp_http_client_init(&config);
 
+        local_response_len = 0;
         esp_err_t err = esp_http_client_perform(client);
         if (err == ESP_OK) {
             ESP_LOGI(TAG, "HTTP GET Status = %d, content_length = %d",// PRId64,
@@ -34,9 +37,12 @@ namespace gopro {
         } else {
             ESP_LOGE(TAG, "HTTP GET request failed: %s", esp_err_to_name(err));
         }
-        ESP_LOG_BUFFER_HEX(TAG, local_response_buffer, output_len);
+        ESP_LOGD(TAG, "Output len after return %d", local_response_len);
+        ESP_LOG_BUFFER_HEX(TAG, local_response_buffer, local_response_len);
 
         esp_http_client_cleanup(client);
+
+        clientMutex.unlock();
         return true;
     }
 
@@ -55,7 +61,6 @@ namespace gopro {
                 ESP_LOGD(TAG, "HTTP_EVENT_ERROR");
                 break;
             case HTTP_EVENT_ON_CONNECTED:
-                local_response_len = 0;
                 ESP_LOGD(TAG, "HTTP_EVENT_ON_CONNECTED");
                 break;
             case HTTP_EVENT_HEADER_SENT:
@@ -112,6 +117,7 @@ namespace gopro {
                     free(output_buffer);
                     output_buffer = NULL;
                 }
+                ESP_LOGD(TAG, "Output len at finish %d", output_len);
                 local_response_len = output_len;
                 output_len = 0;
                 break;
