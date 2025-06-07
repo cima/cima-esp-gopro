@@ -105,5 +105,10 @@
         "slist": "cpp",
         "cinttypes": "cpp",
         "xxatomic": "cpp"
-    }
+    },
+    "idf.pythonInstallPath": "c:\\Users\\user\\.espressif\\tools\\idf-python\\3.11.2\\python.exe",
+    "idf.espIdfPathWin": "c:\\tools\\ESP\\v5.4\\esp-idf",
+    "idf.toolsPathWin": "c:\\Users\\user\\.espressif",
+    "idf.flashType": "UART",
+    "idf.portWin": "COM4"
 }

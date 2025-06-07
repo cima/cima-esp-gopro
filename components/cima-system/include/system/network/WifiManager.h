@@ -24,7 +24,7 @@ class WifiManager : public NetworkManager {
     std::list<WifiCredentials> credentials;
 
     wifi_init_config_t firmwareWifiConfig = WIFI_INIT_CONFIG_DEFAULT();
-    wifi_config_t wifiConfig;
+    wifi_config_t wifiConfig = {};
 
     int connectionAttempts = 0;
 

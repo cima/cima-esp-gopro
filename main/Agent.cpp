@@ -84,7 +84,7 @@ namespace cima {
 
     void Agent::setupNetwork(system::network::WifiManager &wifiManager){
         LOGGER.info(" > WiFi");
-        auto credentials = std::move(readWifiCredentials());
+        auto credentials = readWifiCredentials();
 
         for(auto network : credentials) {
             LOGGER.info("Adding network: %s", network.getSsid().c_str());

@@ -73,7 +73,7 @@ namespace cima::system::network {
         const gpio_num_t rf433ReceiveGpioPin;
         std::list<std::function<void(void)>> receiveHandlers;
 
-        unsigned long lastInterruptTime;
+        unsigned long long lastInterruptTime;
         unsigned long successMessageCounter;
         unsigned int repeatCount;
         unsigned int changeCount;

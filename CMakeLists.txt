@@ -22,12 +22,10 @@ find_package(Boost)
 
 # Adafruit sensor
 # ---------------
-set(IOT_COMPONENT_DIRS  ${IOT_COMPONENT_DIRS}
-                        $ENV{IOT_SOLUTION_PATH}/components/i2c_devices
-                        $ENV{IOT_SOLUTION_PATH}/components/i2c_devices/sensor
-                        $ENV{IOT_SOLUTION_PATH}/components/i2c_devices/others )
+list(APPEND IOT_COMPONENT_DIRS
+                        $ENV{IOT_SOLUTION_PATH}/components/bus)
 
-set(EXTRA_COMPONENT_DIRS "${EXTRA_COMPONENT_DIRS} ${IOT_COMPONENT_DIRS}")
+list(APPEND EXTRA_COMPONENT_DIRS ${IOT_COMPONENT_DIRS})
 
 # Main code
 # ---------

@@ -9,4 +9,4 @@ endif()
 idf_component_register(
     SRCS ${COMPONENT_SOURCES}
     INCLUDE_DIRS ${COMPONENT_DIR}/include
-    REQUIRES mbedtls esp_eth lwip)
+    REQUIRES esp_driver_gpio esp_driver_ledc mbedtls esp_eth lwip esp_wifi)

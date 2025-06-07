@@ -8,20 +8,17 @@ These enable different Go Pro controll mechanisms as well as range extension.
 Regular wi-fi mobile app is usable only few meters, require phone to be unlock and running,
 not speking about environment and mount needs for cellphone.
 
-
-
 # Development
-
 
 ## Prerequisities
 
-- Python 3.9+
+- Python 3.11+
 - [Git](https://git-scm.com/download/win)
 - [CP210x USB to UART Bridge VCP Drivers](https://www.silabs.com/developers/usb-to-uart-bridge-vcp-drivers)
   - Download v.11.1.0. Unzip. Rightclick _silabser.inf_ and select **install**. Follow instrucitons.
   - Plug-in your Daplink-enabled ESP-32 to USB. Serial port (Silicon Labs CP210x USB to UART Bridge
 ) should appear in device management.
-- [Putty](https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html)
+- [Putty](https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html) \[optional\]
   - Create serial port connection to port determined in previous step
   - Speed (baud): 115 200
   - Data bits: 8, stopbit: 1, flow control: XON/XOFF, parity: none
@@ -29,10 +26,22 @@ not speking about environment and mount needs for cellphone.
   - [C++ extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools)
   - [ESP32 extension](https://marketplace.visualstudio.com/items?itemName=espressif.esp-idf-extension)
 
-- [BOOST]()
-
 
 ## Install toolchain and libraries
+1. Clone this project somewhere e.g. `./cima-esp32-gopro/`
+2. Follow espressif's instruction in [Get Started](https://docs.espressif.com/projects/esp-idf/en/stable/esp32/get-started/index.html)
+3. Clone _ESP-IoT-solution_ to folder from step 2. e.g. `./ESP/esp-iot-solution/`
+```
+git clone --recursive https://github.com/espressif/esp-iot-solution.git
+```
+4. get Boost via [Version 1.79.0](https://www.boost.org/users/history/version_1_79_0.html) and unpack it to some folder. E.g. `./ESP/boost_1_79_0/`
+6. Update file `init_cmd.bat` in this project (from step 1) so the first variable `ESP_TOOLCHAIN_DIR` contains the absolute prefix of your toolchain directory.
+7. Fisrt build
+```
+idf.py build
+```
+
+### Old instructions (too manual)
 1. Clone this project somewhere e.g. `./cima-esp32-gopro/`
 2. Create separate ESP toolchain and libraries folder e.g. `./ESP/`
 ```
@@ -51,11 +60,18 @@ not speking about environment and mount needs for cellphone.
 6. ESP 32 toolchain v4.0 (incl. gcc, cmake, ninja) -- Windows
   - [ESP-IDF](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/windows-setup.html)
     - Downlaods all the necesary tools for development (including COM drivers)
-
 7. Update file `init_cmd.bat` in this project (from step 1) so the first variable `ESP_TOOLCHAIN_DIR` contains the absolute prefix of your toolchain directory.
 8. Fisrt build
 ```
-  idf.py build
+idf.py build
+```
+
+## Compilation
+
+1. Start this project using modified `init_cmd.bat` this ensures that VS Code hase every variable and path available and thus intellisense and code browsing works smoothly.
+2. Build the project using idf.py
+```
+idf.py build
 ```
 
 # Notes:
