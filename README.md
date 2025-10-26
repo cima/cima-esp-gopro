@@ -31,15 +31,35 @@ not speking about environment and mount needs for cellphone.
 1. Clone this project somewhere e.g. `./cima-esp32-gopro/`
 2. Follow espressif's instruction in [Get Started](https://docs.espressif.com/projects/esp-idf/en/stable/esp32/get-started/index.html)
 3. Clone _ESP-IoT-solution_ to folder from step 2. e.g. `./ESP/esp-iot-solution/`
-```
-git clone --recursive https://github.com/espressif/esp-iot-solution.git
-```
+
+  ```bash
+  git clone --recursive https://github.com/espressif/esp-iot-solution.git
+  ```
 4. get Boost via [Version 1.79.0](https://www.boost.org/users/history/version_1_79_0.html) and unpack it to some folder. E.g. `./ESP/boost_1_79_0/`
-6. Update file `init_cmd.bat` in this project (from step 1) so the first variable `ESP_TOOLCHAIN_DIR` contains the absolute prefix of your toolchain directory.
+
+5. Clone esp-idf-mirf
+
+  ```bash
+  git clone https://github.com/nopnop2002/esp-idf-mirf.git
+  ```
+
+and update the location in `NRF24_COMPONENTS_PATH` in [init_cmd.bat](init_cmd.bat) if it is not cloned side by side of this project
+
+5. Clone cima-esp32-components
+
+  ```bash
+  git clone https://github.com/cima/cima-esp32-components.git
+  ```
+
+  and update the location in `CIMA_COMPONENTS_PATH` in [init_cmd.bat](init_cmd.bat) if it is not cloned side by side of this project
+
+6. Update file [init_cmd.bat](init_cmd.bat) in this project (from step 1) so the first variable `ESP_TOOLCHAIN_DIR` contains the absolute prefix of your toolchain directory.
+
 7. Fisrt build
-```
-idf.py build
-```
+
+  ```bash
+  idf.py build
+  ```
 
 ### Old instructions (too manual)
 1. Clone this project somewhere e.g. `./cima-esp32-gopro/`
@@ -70,9 +90,28 @@ idf.py build
 
 1. Start this project using modified `init_cmd.bat` this ensures that VS Code hase every variable and path available and thus intellisense and code browsing works smoothly.
 2. Build the project using idf.py
-```
+
+```bash
 idf.py build
 ```
+
+### WIFI problem 
+Decompile static library to assembler
+```bash
+C:\tools\ESP\esp-framework\tools\xtensa-esp-elf\esp-14.2.0_20241119\xtensa-esp-elf\bin\xtensa-esp32s2-elf-objdump.exe -DCrz -Mintel C:\tools\ESP\v5.4\esp-idf\components\esp_wifi\lib\esp32\libnet80211.a > libnet80211.asm
+```
+> From [multimedia.cx's Objdump](https://wiki.multimedia.cx/index.php/Objdump)
+
+Read partition. The offset and the size are taken from partitions.csv
+```bash
+python -m esptool --port COM4 read_flash 0x9000 0x6000 partition.bin
+```
+
+dump partition to human readable format
+```bash
+C:\tools\ESP\master\esp-idf\components\nvs_flash\nvs_partition_tool\nvs_tool.py -f text -d all partition.bin
+```
+
 
 # Notes:
 > Boot mode: Some boards might be shipped with fast boot as a default option. To use `idf.py flash` you should switch to download boot mode. See in [Manual Bootloader](https://docs.espressif.com/projects/esptool/en/latest/esp32/advanced-topics/boot-mode-selection.html#manual-bootloader)

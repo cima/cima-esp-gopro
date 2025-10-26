@@ -23,7 +23,9 @@ find_package(Boost)
 # Adafruit sensor
 # ---------------
 list(APPEND IOT_COMPONENT_DIRS
-                        $ENV{IOT_SOLUTION_PATH}/components/bus)
+                        $ENV{IOT_SOLUTION_PATH}/components/bus
+                        $ENV{CIMA_COMPONENTS_PATH}/components/cima-system
+                        $ENV{NRF24_COMPONENTS_PATH}/components/mirf)
 
 list(APPEND EXTRA_COMPONENT_DIRS ${IOT_COMPONENT_DIRS})
 
