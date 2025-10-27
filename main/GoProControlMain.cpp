@@ -27,6 +27,7 @@
 
 #include <gopro/GoProClient.h>
 #include <system/network/Rf433Controller.h>
+#include <nrf24/NRF24L01Controller.h>
 
 cima::system::Log logger("main");
 
@@ -48,8 +49,12 @@ cima::system::PWMDriver coldLightMosfetDriver(COLD_LIGHT_MOSFET_DRIVER_GPIO, LED
 
 gopro::GoProClient goProClient;
 cima::system::network::Rf433Controller rf433Controller(GPIO_NUM_13);
+nrf24::NRF24L01Controller nRF24L01Controller;
 
 ::cima::system::ExecutionLimiter limiter(std::chrono::seconds(1));
+::cima::system::ExecutionLimiter fastLimiter(std::chrono::milliseconds(10));
+
+const std::string GO_PRO_MESAGE_REC_SHORT = "GP:Toggle_short";
 
 extern "C" void app_main(void) { 
 
@@ -84,20 +89,39 @@ extern "C" void app_main(void) {
         );
     });
 
+    nRF24L01Controller.init();
+
     buttonController.initButton();
     buttonController.addHandler([&](){
         goProClient.toggleShortRecording();
+
+        uint8_t message[32];
+        strcpy((char *)message, GO_PRO_MESAGE_REC_SHORT.c_str());
+        nRF24L01Controller.broadcastMessage(message);
     });
 
     agent.registerToMainLoop(std::bind(&cima::system::network::Rf433Controller::handleData, &rf433Controller));
     agent.registerToMainLoop(std::bind(&cima::system::ButtonController::handleClicks, &buttonController));
-
+    
     agent.registerToMainLoop([&](){ 
         if( ! limiter.canExecute()) {
             return;
         }
         goProClient.requestStatus();
         goProClient.stopExpiredRecording();
+    });
+
+    agent.registerToMainLoop([&](){ 
+        if( ! fastLimiter.canExecute()) {
+            return;
+        }
+        uint8_t buf[32];
+        if(nRF24L01Controller.receiveMessage(buf)){
+            logger.info("Message received: %s", buf);
+            if (GO_PRO_MESAGE_REC_SHORT.compare((const char *)buf) == 0){
+                goProClient.toggleShortRecording();
+            }
+        }
     });
 
     logger.info(" > Main loop");

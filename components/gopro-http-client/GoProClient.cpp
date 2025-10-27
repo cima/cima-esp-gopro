@@ -41,7 +41,7 @@ namespace gopro {
         local_response_len = 0;
         esp_err_t err = esp_http_client_perform(client);
         if (err == ESP_OK) {
-            LOG.info("HTTP GET Status = %d, content_length = %d",// PRId64,
+            LOG.debug("HTTP GET Status = %d, content_length = %d",// PRId64,
                 esp_http_client_get_status_code(client),
                 esp_http_client_get_content_length(client));
         } else {
@@ -49,7 +49,7 @@ namespace gopro {
         }
         LOG.debug("Output len after return %d", local_response_len);
         //FIXME want to get rid of this or use my own log wrapper
-        ESP_LOG_BUFFER_HEX(TAG, local_response_buffer, local_response_len);
+        ESP_LOG_BUFFER_HEX_LEVEL(TAG, local_response_buffer, local_response_len, ESP_LOG_DEBUG);
 
         esp_http_client_cleanup(client);
 
@@ -225,7 +225,7 @@ namespace gopro {
                 output_len = 0;
                 break;
             case HTTP_EVENT_DISCONNECTED:
-                LOG.info("HTTP_EVENT_DISCONNECTED");
+                LOG.debug("HTTP_EVENT_DISCONNECTED");
                 int mbedtls_err = 0;
                 esp_err_t err = esp_tls_get_and_clear_last_error((esp_tls_error_handle_t)evt->data, &mbedtls_err, NULL);
                 if (err != 0) {

@@ -120,6 +120,17 @@ convert Dumped Bcatrace to readable functin names and line numbers
 xtensa-esp32-elf-addr2line -e J:\src\cima\cima-esp32-gopro\build\CIMA-ESP32-GOPRO.elf  0x40081b0d:0x3ffb1f40 0x400890e5:0x3ffb1f60
 ```
 
+## Wiring
+
+| nRF24L01  | ESP-WROOM-32   |
+|-----------|----------------|
+|  IRQ      |  GPIO17        |
+|  MISO     |  GPIO19        |
+|  MOSI     |  GPIO23        |
+|  SCK      |  GPIO18        |
+|  CSN      |  GPIO5         |
+|  CE       |  GPIO16        |
+
 # Notes:
 > Boot mode: Some boards might be shipped with fast boot as a default option. To use `idf.py flash` you should switch to download boot mode. See in [Manual Bootloader](https://docs.espressif.com/projects/esptool/en/latest/esp32/advanced-topics/boot-mode-selection.html#manual-bootloader)
 
