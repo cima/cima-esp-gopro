@@ -90,6 +90,7 @@ extern "C" void app_main(void) {
     });
 
     agent.registerToMainLoop(std::bind(&cima::system::network::Rf433Controller::handleData, &rf433Controller));
+    agent.registerToMainLoop(std::bind(&cima::system::ButtonController::handleClicks, &buttonController));
 
     agent.registerToMainLoop([&](){ 
         if( ! limiter.canExecute()) {
