@@ -4,7 +4,7 @@ set(srcs
 )
 
 idf_component_register(SRCS "GoProControlMain.cpp" "${srcs}"
-                    REQUIRES freertos spiffs nvs_flash json mbedtls esp_eth driver lwip cima-system gopro-http-client
+                    REQUIRES freertos spiffs nvs_flash json mbedtls esp_eth driver lwip mirf cima-system gopro-http-client
 ) 
 
 enable_language(CXX)

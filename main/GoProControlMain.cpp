@@ -16,18 +16,21 @@
 #include "Agent.h"
 
 #include <system/Log.h>
+#include <system/InterruptController.h>
 
 #include <system/network/WifiManager.h>
 
 #include <system/ExecutionLimiter.h>
 
 #include <system/ButtonController.h>
-#include <system/PWMDriver.h>
+//#include <system/PWMDriver.h>
 
 #include <gopro/GoProClient.h>
 #include <system/network/Rf433Controller.h>
 
 cima::system::Log logger("main");
+
+cima::system::InterruptController interruptController;
 
 cima::system::network::WifiManager wifiManager;
 
@@ -35,11 +38,13 @@ cima::Agent agent;
 
 cima::system::ButtonController buttonController(GPIO_NUM_0);
 
+/*
 const gpio_num_t WARM_LIGHT_MOSFET_DRIVER_GPIO = GPIO_NUM_26;
 cima::system::PWMDriver warmLightMosfetDriver(WARM_LIGHT_MOSFET_DRIVER_GPIO, LEDC_CHANNEL_0, true);
 
 const gpio_num_t COLD_LIGHT_MOSFET_DRIVER_GPIO = GPIO_NUM_27;
 cima::system::PWMDriver coldLightMosfetDriver(COLD_LIGHT_MOSFET_DRIVER_GPIO, LEDC_CHANNEL_1, true);
+*/
 
 gopro::GoProClient goProClient;
 cima::system::network::Rf433Controller rf433Controller(GPIO_NUM_13);
@@ -58,6 +63,8 @@ extern "C" void app_main(void) {
         agent.cat("/spiffs/sheep.txt");
     }
 
+    interruptController.enableInterrupts();
+
     agent.setupNetwork(wifiManager);
 
     wifiManager.registerNetworkUpHandler([&](){goProClient.setNetworkUp();});
@@ -75,6 +82,11 @@ extern "C" void app_main(void) {
             [&](){goProClient.stopRecording();},
             protocol, value
         );
+    });
+
+    buttonController.initButton();
+    buttonController.addHandler([&](){
+        goProClient.toggleShortRecording();
     });
 
     agent.registerToMainLoop(std::bind(&cima::system::network::Rf433Controller::handleData, &rf433Controller));

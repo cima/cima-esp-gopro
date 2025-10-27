@@ -112,6 +112,13 @@ dump partition to human readable format
 C:\tools\ESP\master\esp-idf\components\nvs_flash\nvs_partition_tool\nvs_tool.py -f text -d all partition.bin
 ```
 
+## Debugging
+
+convert Dumped Bcatrace to readable functin names and line numbers
+
+```bat
+xtensa-esp32-elf-addr2line -e J:\src\cima\cima-esp32-gopro\build\CIMA-ESP32-GOPRO.elf  0x40081b0d:0x3ffb1f40 0x400890e5:0x3ffb1f60
+```
 
 # Notes:
 > Boot mode: Some boards might be shipped with fast boot as a default option. To use `idf.py flash` you should switch to download boot mode. See in [Manual Bootloader](https://docs.espressif.com/projects/esptool/en/latest/esp32/advanced-topics/boot-mode-selection.html#manual-bootloader)
