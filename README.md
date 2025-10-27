@@ -120,6 +120,11 @@ convert Dumped Bcatrace to readable functin names and line numbers
 xtensa-esp32-elf-addr2line -e J:\src\cima\cima-esp32-gopro\build\CIMA-ESP32-GOPRO.elf  0x40081b0d:0x3ffb1f40 0x400890e5:0x3ffb1f60
 ```
 
+### Halt on error
+
+`idf.py menuconfig` --> Component config --> ESP System Settings -->  Panic handler behaviour (Print registers and halt) --> (X) Print registers and halt
+
+
 ## Wiring
 
 | nRF24L01  | ESP-WROOM-32   |

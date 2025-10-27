@@ -39,14 +39,12 @@ namespace nrf24 {
     };
 
     bool NRF24L01Controller::broadcastMessage(uint8_t *data) {
+        //Nrf24_sendNoAck(&dev, data);
         Nrf24_send(&dev, data);
 
-        for(int i = 0; i < 4; i++){
-            if (Nrf24_isSend(&dev, 1000)) {
-                LOG.info("Send successful.");
-                return true;
-            } 
-            vTaskDelay(1000/portTICK_PERIOD_MS); // 1s delay
+        if (Nrf24_isSend(&dev, 1000)) {
+            LOG.info("Send successful.");
+            return true;
         }
         
         LOG.error("Send failed.");
