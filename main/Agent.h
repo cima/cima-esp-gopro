@@ -7,6 +7,7 @@
 
 #include <system/Log.h>
 #include <system/network/WifiManager.h>
+#include <system/PWMDriver.h>
 
 #include "LightGroupService.h"
 
@@ -42,5 +43,19 @@ namespace cima {
             void mainLoop();
             void registerToMainLoop(std::function<void()> function);
             void stop();
+    };
+
+    class StatusLight {
+        unsigned long long untilTicks = 0;
+        unsigned int value = 0;
+
+        cima::system::PWMDriver &light;
+
+    public:
+        StatusLight(cima::system::PWMDriver &light);
+        virtual ~StatusLight() = default;
+
+        void refresh();
+        void setValueForMs(unsigned int value, unsigned long long durationMillis);
     };
 }

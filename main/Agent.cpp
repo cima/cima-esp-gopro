@@ -165,4 +165,23 @@ namespace cima {
     void Agent::stop(){
         keepRunning = false;
     }
+
+        
+
+    StatusLight::StatusLight(cima::system::PWMDriver &light) : light(light) {
+    }
+
+    void StatusLight::refresh(){
+        unsigned long long now = esp_log_timestamp();
+        if(now > untilTicks){
+            light.update(0);
+        } else {
+            light.update(value);
+        }
+    }
+
+    void StatusLight::setValueForMs(unsigned int value, unsigned long long durationMillis){
+        this->value = value;
+        this->untilTicks = esp_log_timestamp() + durationMillis;
+    }
 }

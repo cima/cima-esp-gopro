@@ -23,7 +23,7 @@
 #include <system/ExecutionLimiter.h>
 
 #include <system/ButtonController.h>
-//#include <system/PWMDriver.h>
+#include <system/PWMDriver.h>
 
 #include <gopro/GoProClient.h>
 #include <system/network/Rf433Controller.h>
@@ -38,14 +38,15 @@ cima::system::network::WifiManager wifiManager;
 cima::Agent agent;
 
 cima::system::ButtonController buttonController(GPIO_NUM_0);
+cima::system::ButtonController wifiSwitch(GPIO_NUM_21);
 
-/*
-const gpio_num_t WARM_LIGHT_MOSFET_DRIVER_GPIO = GPIO_NUM_26;
-cima::system::PWMDriver warmLightMosfetDriver(WARM_LIGHT_MOSFET_DRIVER_GPIO, LEDC_CHANNEL_0, true);
+cima::system::PWMDriver redLightDriver(GPIO_NUM_12, LEDC_CHANNEL_0, false);
+cima::system::PWMDriver greenLightDriver(GPIO_NUM_14, LEDC_CHANNEL_1, false);
+cima::system::PWMDriver blueLightDriver(GPIO_NUM_27, LEDC_CHANNEL_2, false);
 
-const gpio_num_t COLD_LIGHT_MOSFET_DRIVER_GPIO = GPIO_NUM_27;
-cima::system::PWMDriver coldLightMosfetDriver(COLD_LIGHT_MOSFET_DRIVER_GPIO, LEDC_CHANNEL_1, true);
-*/
+cima::StatusLight redStatusLight(redLightDriver);
+cima::StatusLight greenStatusLight(greenLightDriver);
+cima::StatusLight blueStatusLight(blueLightDriver);
 
 gopro::GoProClient goProClient;
 cima::system::network::Rf433Controller rf433Controller(GPIO_NUM_13);
@@ -55,6 +56,8 @@ nrf24::NRF24L01Controller nRF24L01Controller;
 ::cima::system::ExecutionLimiter fastLimiter(std::chrono::milliseconds(10));
 
 const std::string GO_PRO_MESAGE_REC_SHORT = "GP:Toggle_short";
+const std::string GO_PRO_MESAGE_STATUS_OK = "GP:status:OK";
+const std::string GO_PRO_MESAGE_STATUS_FAIL = "GP:status:FAIL";
 
 extern "C" void app_main(void) { 
 
@@ -69,13 +72,42 @@ extern "C" void app_main(void) {
     }
 
     interruptController.enableInterrupts();
+    interruptController.createDefaultEventLoop();
 
     agent.setupNetwork(wifiManager);
 
     wifiManager.registerNetworkUpHandler([&](){goProClient.setNetworkUp();});
     wifiManager.registerNetworkDownHandler([&](){goProClient.setNetworkDown();});
 
-    wifiManager.start();
+    wifiSwitch.initButton();
+
+    //TODO runtime based truring wifi on/off is difficult -> postponing
+    /*
+    wifiSwitch.addUpHandler([&](){
+        logger.info("WiFi switch is UP - WiFi will be started.");
+        if (!wifiManager.isStarted()){
+            logger.info("WiFi manager started - ignoring click.");
+        } else {
+            wifiManager.start();
+        }
+    });
+    wifiSwitch.addDownHandler([&](){
+        logger.info("WiFi switch is DOWN - WiFi is stopping.");
+        wifiManager.stop();
+    });
+    */
+
+    if(wifiSwitch.isButtonUp()){
+        logger.info("WiFi switch is UP - WiFi will be started.");
+        wifiManager.start();
+    } else {
+        logger.info("WiFi switch is DOWN - WiFi will NOT be started.");
+    }
+
+    //redLightDriver.update(8192);
+    //greenLightDriver.update(2500);
+    //blueLightDriver.update(0);
+    blueStatusLight.setValueForMs(8191, 2000);
 
     goProClient.connect();
 
@@ -89,7 +121,7 @@ extern "C" void app_main(void) {
         );
     });
 
-    nRF24L01Controller.init();
+    nRF24L01Controller.init(nrf24::NRF24L01Controller::DISABLE_NRF24_AUTO_ACK);
 
     buttonController.initButton();
     buttonController.addHandler([&](){
@@ -102,13 +134,33 @@ extern "C" void app_main(void) {
 
     agent.registerToMainLoop(std::bind(&cima::system::network::Rf433Controller::handleData, &rf433Controller));
     agent.registerToMainLoop(std::bind(&cima::system::ButtonController::handleClicks, &buttonController));
+    agent.registerToMainLoop(std::bind(&cima::system::ButtonController::handleClicks, &wifiSwitch));
     
+    // Status reporting
     agent.registerToMainLoop([&](){ 
         if( ! limiter.canExecute()) {
             return;
         }
-        goProClient.requestStatus();
-        goProClient.stopExpiredRecording();
+
+        // Report wifi related status only when wifi is enabled
+        if(wifiSwitch.isButtonUp()){
+            //FIXME this is blocking and congests main loop -> separate thread
+            bool status = goProClient.requestStatus();
+            if (status) {
+                //TODO blink blue (go pro blinks blue) - locally
+            }
+
+            //Send status over NRF24L01
+            uint8_t message[32];
+            strcpy((char *)message, status 
+                ? GO_PRO_MESAGE_STATUS_OK.c_str() 
+                : GO_PRO_MESAGE_STATUS_FAIL.c_str()
+            );
+            nRF24L01Controller.broadcastMessage(message);
+
+            //Even though it is blocking it worth to stop expired recording
+            goProClient.stopExpiredRecording();
+        } 
     });
 
     agent.registerToMainLoop([&](){ 
@@ -121,7 +173,15 @@ extern "C" void app_main(void) {
             if (GO_PRO_MESAGE_REC_SHORT.compare((const char *)buf) == 0){
                 goProClient.toggleShortRecording();
             }
+            if (GO_PRO_MESAGE_STATUS_OK.compare((const char *)buf) == 0){
+                //TODO blink blue (go pro blibks blue) - locally
+                blueStatusLight.setValueForMs(8191, 500);
+            }
         }
+
+        redStatusLight.refresh();  
+        greenStatusLight.refresh();
+        blueStatusLight.refresh();
     });
 
     logger.info(" > Main loop");

@@ -5,8 +5,10 @@
 
 namespace nrf24 {
     const cima::system::Log NRF24L01Controller::LOG("NRF24L01Controller");
+    const bool NRF24L01Controller::DISABLE_NRF24_AUTO_ACK = false;
+    const bool NRF24L01Controller::ENABLE_NRF24_AUTO_ACK = true;
 
-    bool NRF24L01Controller::init(){
+    bool NRF24L01Controller::init(bool enableAutoAck){
         LOG.info("Radio init");
         
         Nrf24_init(&dev);
@@ -31,6 +33,10 @@ namespace nrf24 {
 
         advancedSettings(&dev);
 
+        if ( ! enableAutoAck) {
+            Nrf24_enableNoAckFeature(&dev);
+        }
+
         // Print settings
         Nrf24_printDetails(&dev);
 
@@ -39,8 +45,8 @@ namespace nrf24 {
     };
 
     bool NRF24L01Controller::broadcastMessage(uint8_t *data) {
-        //Nrf24_sendNoAck(&dev, data);
-        Nrf24_send(&dev, data);
+        Nrf24_sendNoAck(&dev, data);
+        //Nrf24_send(&dev, data);
 
         if (Nrf24_isSend(&dev, 1000)) {
             LOG.info("Send successful.");

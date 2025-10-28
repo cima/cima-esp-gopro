@@ -39,11 +39,13 @@ namespace gopro {
         esp_http_client_handle_t client = esp_http_client_init(&config);
 
         local_response_len = 0;
+        bool result = false;
         esp_err_t err = esp_http_client_perform(client);
         if (err == ESP_OK) {
             LOG.debug("HTTP GET Status = %d, content_length = %d",// PRId64,
                 esp_http_client_get_status_code(client),
                 esp_http_client_get_content_length(client));
+            result = true;
         } else {
             LOG.error("HTTP GET request failed: %s", esp_err_to_name(err));
         }
@@ -53,7 +55,7 @@ namespace gopro {
 
         esp_http_client_cleanup(client);
 
-        return true;
+        return result;
     }
 
     void GoProClient::toggleShortRecording(){
