@@ -7,6 +7,13 @@
 #include <system/Log.h>
 
 namespace gopro {
+
+    struct GoProStatus {
+        bool overall;
+        int recordingStatus;
+        int recordingDuration;
+    };
+
     class GoProClient {
     public:
         static const int MAX_HTTP_OUTPUT_BUFFER = 2048;
@@ -37,7 +44,7 @@ namespace gopro {
 
         bool connect();
 
-        bool requestStatus();
+        GoProStatus requestStatus();
 
         void setNetworkUp() { 
             networkUp.store(true);
@@ -57,6 +64,7 @@ namespace gopro {
 
     private:
         esp_err_t receiveClientEvent(esp_http_client_event_t *evt);
+        GoProStatus decodeJsonBodyToStatus(esp_http_client_handle_t client);
 
         static esp_err_t receive_wrapper(esp_http_client_event_t *evt) {
             return ((GoProClient *)evt->user_data)->receiveClientEvent(evt);

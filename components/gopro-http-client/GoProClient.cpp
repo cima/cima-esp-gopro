@@ -1,6 +1,8 @@
 #include <gopro/GoProClient.h>
 #include <system/Log.h>
 #include <functional>
+#include <memory>
+#include <cJSON.h>
 
 #include <esp_tls.h>
 #include <esp_log.h> //To obtain timestampe for measuring timeouts
@@ -10,6 +12,9 @@ namespace gopro {
     static const char *TAG = "GoProCLient"; //TODO inline once my log is used
     static const uint32_t INACTIVE_STOP_TIME = 0xffffffff;
     static const uint32_t SHORT_RECORDING_SECONDS = 40;
+
+    static const char *RECORDING_STATUS_KEY = "8";
+    static const char *RECORDING_DURATION_SECONDS_KEY = "13";
 
     cima::system::Log GoProClient::LOG(TAG);
 
@@ -23,29 +28,41 @@ namespace gopro {
         return true;
     }
 
-    bool GoProClient::requestStatus() {
+    GoProStatus GoProClient::requestStatus() {
         std::unique_lock<std::mutex> lock(clientMutex); 
+
+        gopro::GoProStatus status = {
+            .overall = false
+        };
 
         if( ! isNetworkUp()) {
             LOG.debug("Network is down - exiting status request");
-            return false;
+            return status;
         }
 
-        config.path = "/bacpac/se";
+        //config.path = "/bacpac/se";
+        config.path = "/gp/gpControl/status";
         config.query = "t=gizmolikespizza";//FIXME password
         config.user_data = this;
+        config.is_async = false;
 
         //TODO tohle asi do connectu
         esp_http_client_handle_t client = esp_http_client_init(&config);
 
         local_response_len = 0;
-        bool result = false;
         esp_err_t err = esp_http_client_perform(client);
         if (err == ESP_OK) {
+            int httpStatus = esp_http_client_get_status_code(client);
             LOG.debug("HTTP GET Status = %d, content_length = %d",// PRId64,
-                esp_http_client_get_status_code(client),
+                httpStatus,
                 esp_http_client_get_content_length(client));
-            result = true;
+                if (httpStatus == 200) {
+                    //TODO if status == 200 decode json and read $.status.13 and convert to bool
+                    gopro::GoProStatus goProStatus = decodeJsonBodyToStatus(client);
+                    status.recordingStatus = goProStatus.recordingStatus;
+                    status.recordingDuration = goProStatus.recordingDuration;
+                }
+            status.overall = true;
         } else {
             LOG.error("HTTP GET request failed: %s", esp_err_to_name(err));
         }
@@ -55,7 +72,57 @@ namespace gopro {
 
         esp_http_client_cleanup(client);
 
-        return result;
+        return status;
+    }
+
+    // Define a custom deleter for cJSON
+    struct cJSONDeleter {
+        void operator()(cJSON* ptr) const {
+            if (ptr) {
+                cJSON_Delete(ptr);
+            }
+        }
+    };
+
+    GoProStatus GoProClient::decodeJsonBodyToStatus(esp_http_client_handle_t client){
+        // see https://github.com/KonradIT/goprowifihack/blob/master/HERO4/CameraStatus.md
+
+        local_response_buffer[
+            local_response_len < MAX_HTTP_OUTPUT_BUFFER 
+                ? local_response_len 
+                : MAX_HTTP_OUTPUT_BUFFER] = 0;
+
+        LOG.debug("Response end at: %d", 
+                local_response_len < MAX_HTTP_OUTPUT_BUFFER 
+                ? local_response_len 
+                : MAX_HTTP_OUTPUT_BUFFER);
+        LOG.debug("Response: %s", local_response_buffer);
+
+        // NOTE: below line is not intended for runtime debugging but is very handy for development debugging
+        //ESP_LOG_BUFFER_HEX_LEVEL(TAG, local_response_buffer, local_response_len, ESP_LOG_INFO);
+
+        std::unique_ptr<cJSON, cJSONDeleter> root = std::unique_ptr<cJSON, cJSONDeleter>(cJSON_Parse(local_response_buffer));
+
+        cJSON *statusObj = root ? cJSON_GetObjectItem(root.get(), "status") : nullptr;
+
+        cJSON *recordingStatusObj = statusObj ? cJSON_GetObjectItem(statusObj, RECORDING_STATUS_KEY) : nullptr;
+        cJSON *recodingDurationObj = statusObj ? cJSON_GetObjectItem(statusObj, RECORDING_DURATION_SECONDS_KEY) : nullptr;
+
+        //TODO just a development debugging block
+        if ( ! root || ! statusObj || ! recordingStatusObj || ! recodingDurationObj){
+            LOG.error("UNEXPECTED: Some JSON object is missing (%d, %d, %d, %d). %s", 
+                root ? 1 : 0,
+                statusObj ? 1 : 0,
+                recordingStatusObj ? 1 : 0,
+                recodingDurationObj ? 1 : 0,
+                local_response_buffer
+            );
+        }
+
+        return {
+            .recordingStatus = recordingStatusObj ? recordingStatusObj->valueint : -1,
+            .recordingDuration = recodingDurationObj ? recodingDurationObj->valueint : -1
+        };
     }
 
     void GoProClient::toggleShortRecording(){
@@ -116,6 +183,7 @@ namespace gopro {
         config.path = "/bacpac/SH";
         config.query = "t=gizmolikespizza&p=%00"; //FIXME password
         config.user_data = this;
+        config.buffer_size = MAX_HTTP_OUTPUT_BUFFER;
 
         //TODO tohle asi do connectu
         esp_http_client_handle_t client = esp_http_client_init(&config);
@@ -185,16 +253,50 @@ namespace gopro {
                 *  Check for chunked encoding is added as the URL for chunked encoding used in this example returns binary data.
                 *  However, event handler can also be used in case chunked encoding is used.
                 */
-                if (!esp_http_client_is_chunked_response(evt->client)) {
+                //if (!esp_http_client_is_chunked_response(evt->client)) 
+                {
                     // If user_data buffer is configured, copy the response into the buffer
                     int copy_len = 0;
                     if (sizeof(local_response_buffer)) {
                         // The last byte in local_response_buffer is kept for the NULL character in case of out-of-bound access.
-                        copy_len = std::min(evt->data_len, (MAX_HTTP_OUTPUT_BUFFER - output_len));
-                        if (copy_len) {
+                        //*
+                        int copy_len = std::min(evt->data_len, (MAX_HTTP_OUTPUT_BUFFER - output_len));
+                        if (copy_len > 0) {
+                            LOG.debug("output_len = %d, copy_len = %d, evt->data_len = %d", output_len, copy_len, evt->data_len);
                             memcpy(local_response_buffer + output_len, evt->data, copy_len);
+
                         }
-                    } else {
+                         //   */
+                        if (esp_http_client_is_chunked_response(evt->client)) {
+                            int chunkLength;
+                            esp_http_client_get_chunk_length(evt->client, &chunkLength);
+                            LOG.debug("It is chunked & chunk size is: %d", chunkLength);
+                            LOG.debug("It is chunked & singalized size is: %d", evt->data_len);
+                            
+                        } else {
+                            LOG.debug("It is absolute & size is: %d", evt->data_len);
+                        }
+
+                        LOG.debug("Write addr = %x",local_response_buffer + output_len); 
+                        LOG.debug("Available space = %d", MAX_HTTP_OUTPUT_BUFFER - output_len);
+                        LOG.debug("output_len = %d", output_len);
+
+                        /*
+                        int copy_len;
+                        if ((copy_len = esp_http_client_read_response(evt->client, 
+                            local_response_buffer + output_len, 
+                            MAX_HTTP_OUTPUT_BUFFER - output_len))) {
+                                //TODO store read data
+                                
+                            output_len += copy_len;
+                        }
+                        */
+
+            
+                        output_len += copy_len;
+                    } 
+                    /*
+                    else {
                         int content_len = esp_http_client_get_content_length(evt->client);
                         if (output_buffer == NULL) {
                             // We initialize output_buffer with 0 because it is used by strlen() and similar functions therefore should be null terminated.
@@ -210,7 +312,8 @@ namespace gopro {
                             memcpy(output_buffer + output_len, evt->data, copy_len);
                         }
                     }
-                    output_len += copy_len;
+                        */
+                    
                 }
 
                 break;
@@ -231,8 +334,8 @@ namespace gopro {
                 int mbedtls_err = 0;
                 esp_err_t err = esp_tls_get_and_clear_last_error((esp_tls_error_handle_t)evt->data, &mbedtls_err, NULL);
                 if (err != 0) {
-                    LOG.info("Last esp error code: 0x%x", err);
-                    LOG.info("Last mbedtls failure: 0x%x", mbedtls_err);
+                    LOG.error("Last esp error code: 0x%x", err);
+                    LOG.error("Last mbedtls failure: 0x%x", mbedtls_err);
                 }
                 if (output_buffer != NULL) {
                     free(output_buffer);
